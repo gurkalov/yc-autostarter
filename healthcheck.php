@@ -10,6 +10,8 @@ use Jose\Component\Signature\Serializer\CompactSerializer;
 use GuzzleHttp\Client;
 use JJG\Ping;
 use GuzzleHttp\Exception\ClientException;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 include 'vendor/autoload.php';
 $dotenv = Dotenv::create(__DIR__);
@@ -66,7 +68,7 @@ function getIamToken()
     return $responseToken->iamToken;
 }
 
-function startInstance($name)
+function startInstance($name, $log)
 {
     $client = new Client();
 
@@ -77,16 +79,18 @@ function startInstance($name)
             ]
         ]);
     } catch (ClientException $e) {
-        print 'Start Instance error:' . $e->getMessage() . PHP_EOL;
+        $log->error('Start Instance error: ' . $e->getMessage());
     }
 }
 
+$log = new Logger('name');
+$log->pushHandler(new StreamHandler('logs/info.log', Logger::INFO));
 
 $ping = new Ping($_ENV['YC_INSTANCE_IP'], 128, 5);
 $latency = $ping->ping();
 if ($latency !== false) {
-    print 'Latency is ' . $latency . ' ms' . PHP_EOL;
+    $log->info('Latency is ' . $latency . ' ms');
 } else {
-    print 'Start Instance' . PHP_EOL;
-    startInstance($_ENV['YC_INSTANCE_NAME']);
+    startInstance($_ENV['YC_INSTANCE_NAME'], $log);
+    $log->info('Start Instance');
 }
