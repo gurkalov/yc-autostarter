@@ -44,7 +44,7 @@ function getIamToken()
         'kid' => $key_id
     ];
 
-    $key = JWKFactory::createFromKeyFile('private.pem');
+    $key = JWKFactory::createFromKeyFile(dirname(__FILE__) . '/private.pem');
     $payload = $jsonConverter->encode($claims);
 
     $jws = $jwsBuilder
@@ -84,7 +84,7 @@ function startInstance($name, $log)
 }
 
 $log = new Logger('name');
-$log->pushHandler(new StreamHandler('logs/info.log', Logger::INFO));
+$log->pushHandler(new StreamHandler(dirname(__FILE__) . '/logs/info.log', Logger::INFO));
 
 $ping = new Ping($_ENV['YC_INSTANCE_IP'], 128, 5);
 $latency = $ping->ping();
